@@ -9,14 +9,20 @@ struct Main {
     static let password = "notagoodpassword"
 
     static func main() async throws {
-        try await Task {
-            try await basicTest()
-        }
-        .wait()
+        try await basic1Test()
+        try await basic2Test()
         try await pubSubTest()
     }
 
-    static func basicTest() async throws {
+    static func basic1Test() async throws {
+        let connection = try await RedisConnection(label: "preamble", host: host)
+        try await connection.connect()
+        try await connection.hello(password: password)
+        _ = try await connection.send("SET", "foo", "bar")
+        print(try await connection.send("GET", "foo").stringValue)
+    }
+
+    static func basic2Test() async throws {
         // Connect to a REDIS server and ask it a bunch of questions...
         Timeit.shared.start("PREAMBLE")
         let connection = try await RedisConnection(label: "preamble", host: host)
@@ -75,5 +81,3 @@ struct Main {
         assert(publishedValues == receivedValues)
     }
 }
-
-
