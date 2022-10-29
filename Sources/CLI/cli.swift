@@ -64,7 +64,7 @@ struct Main {
 
         let publisherTask = Task {
             // We're going to publish some things.
-            let values = 0..<100
+            let values = 0..<10_000
             Timeit.shared.start("Sending")
             let connection = try await RedisConnection(label: "sender", host: host)
             try await connection.connect()
