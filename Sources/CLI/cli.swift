@@ -15,7 +15,7 @@ struct Main {
     }
 
     static func basic1Test() async throws {
-        let connection = try await RedisConnection(label: "preamble", host: host)
+        let connection = RedisConnection(label: "preamble", host: host)
         try await connection.connect()
         try await connection.hello(password: password)
         _ = try await connection.send("SET", "foo", "bar")
@@ -25,7 +25,7 @@ struct Main {
     static func basic2Test() async throws {
         // Connect to a REDIS server and ask it a bunch of questions...
         Timeit.shared.start("PREAMBLE")
-        let connection = try await RedisConnection(label: "preamble", host: host)
+        let connection = RedisConnection(label: "preamble", host: host)
         try await connection.connect()
         try await connection.hello(username: "default", password: password, clientName: "example-client")
         log(connection, try await connection.send("PING"))
@@ -47,7 +47,7 @@ struct Main {
 
         let listenerTask = Task {
             Timeit.shared.start("Listening")
-            let connection = try await RedisConnection(label: "listener", host: host)
+            let connection = RedisConnection(label: "listener", host: host)
             try await connection.connect()
             try await connection.hello(password: password)
             var values = Set<Int>()
@@ -66,7 +66,7 @@ struct Main {
             // We're going to publish some things.
             let values = 0..<10_000
             Timeit.shared.start("Sending")
-            let connection = try await RedisConnection(label: "sender", host: host)
+            let connection = RedisConnection(label: "sender", host: host)
             try await connection.connect()
             try await connection.hello(password: password)
             try await connection.send(values: values.map { ["PUBLISH", channel, "\($0)"] })

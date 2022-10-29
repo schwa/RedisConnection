@@ -12,7 +12,7 @@ public actor RedisConnection {
 
     let logger: Logger? = nil// Logger()
 
-    public init(label: String? = nil, host: String? = nil, port: Int? = nil) async throws {
+    public init(label: String? = nil, host: String? = nil, port: Int? = nil) {
         self.label = label
         let host = NWEndpoint.Host(host ?? "localhost")
         let port = NWEndpoint.Port(rawValue: NWEndpoint.Port.RawValue(port ?? 6_379))!

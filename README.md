@@ -7,7 +7,7 @@ The project supports the Redis streaming (RESP-3) protocol. It has built-in supp
 ## Basic Example
 
 ```swift
-let connection = try await RedisConnection(host: host)
+let connection = RedisConnection(host: host)
 try await connection.connect()
 try await connection.hello(password: password)
 _ = try await connection.send("SET", "foo", "bar")
@@ -17,7 +17,7 @@ print(try await connection.send("GET", "foo").stringValue)
 ## Basic Pubsub Listener Example
 
 ```swift
-let connection = try await RedisConnection(host: host)
+let connection = RedisConnection(host: host)
 try await connection.connect()
 try await connection.hello(password: password)
 for try await message in try await connection.subscribe(channels: channel) {
