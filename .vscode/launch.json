@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug CLI",
+            "program": "${workspaceFolder:RedisConnection}/.build/debug/CLI",
+            "args": [],
+            "cwd": "${workspaceFolder:RedisConnection}",
+            "preLaunchTask": "swift: Build Debug CLI"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release CLI",
+            "program": "${workspaceFolder:RedisConnection}/.build/release/CLI",
+            "args": [],
+            "cwd": "${workspaceFolder:RedisConnection}",
+            "preLaunchTask": "swift: Build Release CLI"
+        }
+    ]
+}
