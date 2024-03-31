@@ -2,17 +2,17 @@ import Foundation
 import RedisConnection
 import os
 
-
 @main
 struct Main {
-    static let host = "sjc.morning-resonance-3623.internal"
+    static let host = "localhost"
     static let password = "notagoodpassword"
 
     static func main() async throws {
-        try await basic1Test()
-        try await basic2Test()
-        try await pubSubTest()
+        //        try! await basic1Test()
+        //        try! await basic2Test()
+                try! await pubSubTest()
     }
+
 
     static func basic1Test() async throws {
         let connection = RedisConnection(label: "preamble", host: host)
@@ -80,4 +80,5 @@ struct Main {
 
         assert(publishedValues == receivedValues)
     }
+
 }

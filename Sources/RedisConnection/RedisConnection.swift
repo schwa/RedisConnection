@@ -10,7 +10,7 @@ public actor RedisConnection {
     let connection: NWConnection
     let stateStream: AsyncStream<NWConnection.State>
 
-    let logger: Logger? = nil// Logger()
+    let logger: Logger? = nil // Logger()
 
     public init(label: String? = nil, host: String? = nil, port: Int? = nil) {
         self.label = label
@@ -71,6 +71,7 @@ public actor RedisConnection {
         let logger = self.logger
         logger?.debug("\(#function)")
         connection.receive(minimumIncompleteLength: 0, maximumLength: Int.max) { _, context, _, error in
+            logger?.debug("\(#function) (closure)")
             if let error = error {
                 resumeThrowing(error)
                 return
@@ -193,7 +194,13 @@ public extension RedisConnection {
 
         return AnyAsyncSequence {
             AnyAsyncIterator {
-                return try await self.receive().pubsubValue
+                let value = try await self.receive()
+                switch value {
+                case .pubsub(let pubsub):
+                    return pubsub
+                default:
+                    return nil
+                }
             }
         }
     }
@@ -234,3 +241,6 @@ extension RedisConnection {
         }
     }
 }
+
+// MARK: -
+

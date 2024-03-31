@@ -12,7 +12,7 @@ public class RedisProtocol: NWProtocolFramerImplementation {
     public static let label: String = "REDIS"
     public static let definition = NWProtocolFramer.Definition(implementation: RedisProtocol.self)
 
-    var debugLogger: Logger? // Logger()
+    var debugLogger: Logger? = nil // Logger()
     let logger = Logger()
     var parser = RESPValueParser()
 
@@ -44,7 +44,7 @@ public class RedisProtocol: NWProtocolFramerImplementation {
                     }
                     value = try parser.parse(bytes: buffer)
                     debugLogger?.debug("parsed: \(self.parser.bytesParsed - startBytesParsed) / \(buffer.count)")
-                    // We may not have parsed the entire buffer so computer what we did pass
+                    // We may not have parsed the entire buffer so compute what we did pass
                     return parser.bytesParsed - startBytesParsed
                 }
                 catch let localError {

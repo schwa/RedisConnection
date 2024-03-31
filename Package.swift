@@ -1,5 +1,4 @@
-// swift-tools-version: 5.6
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 5.9
 
 import PackageDescription
 
@@ -7,7 +6,7 @@ let package = Package(
     name: "RedisConnection",
     platforms: [
         .iOS("16.0"),
-        .macOS("13.0"),
+        .macOS("14.0"),
         .macCatalyst("16.0")
     ],
     products: [
