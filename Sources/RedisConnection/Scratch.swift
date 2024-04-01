@@ -53,10 +53,3 @@ extension [UInt8] {
     // I will fight you.
     static let crlf = [UInt8(ascii: "\r"), UInt8(ascii: "\n")]
 }
-
-extension Array {
-    mutating func replaceLast(_ element: Element) {
-        removeLast()
-        append(element)
-    }
-}
