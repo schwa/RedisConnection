@@ -5,9 +5,9 @@ import PackageDescription
 let package = Package(
     name: "RedisConnection",
     platforms: [
-        .iOS("16.0"),
+        .iOS("17.0"),
         .macOS("14.0"),
-        .macCatalyst("16.0")
+        .macCatalyst("17.0")
     ],
     products: [
         .library(name: "RedisConnection", targets: ["RedisConnection"])

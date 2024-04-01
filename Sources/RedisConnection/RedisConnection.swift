@@ -1,6 +1,6 @@
 import Foundation
-@preconcurrency import Network
-import os
+import Network
+@preconcurrency import os
 
 public actor RedisConnection {
 
@@ -11,6 +11,13 @@ public actor RedisConnection {
     let stateStream: AsyncStream<NWConnection.State>
 
     let logger: Logger? = nil // Logger()
+
+    enum Mode {
+        case normal
+        case subscriber
+    }
+
+    var mode = Mode.normal
 
     public init(label: String? = nil, host: String? = nil, port: Int? = nil) {
         self.label = label
@@ -67,7 +74,7 @@ public actor RedisConnection {
 
     // MARK: -
 
-    private func receiveHelper(resumeThrowing: @escaping (Error) -> Void, resumeReturning: @escaping (RESPValue) -> Void) {
+    private func receiveHelper(resumeThrowing: @Sendable @escaping (Error) -> Void, resumeReturning: @Sendable @escaping (RESPValue) -> Void) {
         let logger = self.logger
         logger?.debug("\(#function)")
         connection.receive(minimumIncompleteLength: 0, maximumLength: Int.max) { _, context, _, error in
@@ -91,10 +98,10 @@ public actor RedisConnection {
         }
     }
 
-
     // MARK: -
 
     public func send(value: RESPValue) async throws -> (RESPValue) {
+        assert(mode == .normal)
         logger?.debug("\(#function)")
         let encodedValue = try value.encode()
         return try await withCheckedThrowingContinuation { continuation in
@@ -114,6 +121,7 @@ public actor RedisConnection {
     }
 
     public func sendNoReceive(value: RESPValue) async throws {
+        assert(mode == .normal)
         logger?.debug("\(#function)")
         let encodedValue = try value.encode()
         return try await withCheckedThrowingContinuation { continuation in
@@ -127,6 +135,7 @@ public actor RedisConnection {
     }
 
     public func receive() async throws -> RESPValue {
+        assert(mode == .normal)
         logger?.debug("\(#function)")
         return try await withCheckedThrowingContinuation { continuation in
             receiveHelper { error in
@@ -179,19 +188,17 @@ public extension RedisConnection {
 public extension RedisConnection {
 
     func subscribe(channels: String...) async throws -> AnyAsyncSequence<Pubsub> {
+        mode = .subscriber
+
         logger?.debug("\(#function)")
         try await sendNoReceive(value: ["SUBSCRIBE"] + channels)
-
-
         var confirmedChannels: Set<String> = []
         for _ in 0 ..< channels.count {
             confirmedChannels.insert(try await receive().pubsubValue.channel)
         }
         if confirmedChannels != Set(channels) {
-            throw RedisError.undefined("Could not subscribe to all channels.")
+            throw RedisError.partialSubscribe
         }
-
-
         return AnyAsyncSequence {
             AnyAsyncIterator {
                 let value = try await self.receive()
@@ -209,7 +216,6 @@ public extension RedisConnection {
         let response = try await send(value: ["PUBLISH", channel, value])
         return try response.integerValue
     }
-
 }
 
 // MARK: -
