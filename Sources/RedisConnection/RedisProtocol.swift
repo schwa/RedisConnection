@@ -46,8 +46,8 @@ public class RedisProtocol: NWProtocolFramerImplementation {
                     // We may not have parsed the entire buffer so compute what we did pass
                     return parser.bytesParsed - startBytesParsed
                 }
-                catch {
-                    logger.error("\(String(describing: error))")
+                catch let localError {
+                    logger.error("\(String(describing: localError))")
                     error = localError
                     return 0
                 }
