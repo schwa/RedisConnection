@@ -10,7 +10,7 @@ struct Main {
     static func main() async throws {
         //        try! await basic1Test()
         //        try! await basic2Test()
-                try! await pubSubTest()
+        try! await pubSubTest()
     }
 
     static func basic1Test() async throws {
@@ -18,7 +18,7 @@ struct Main {
         try await connection.connect()
         try await connection.hello(password: password)
         _ = try await connection.send("SET", "foo", "bar")
-        print(try await connection.send("GET", "foo").stringValue)
+        try await print(connection.send("GET", "foo").stringValue)
     }
 
     static func basic2Test() async throws {
@@ -27,21 +27,20 @@ struct Main {
         let connection = RedisConnection(label: "preamble", host: host)
         try await connection.connect()
         try await connection.hello(username: "default", password: password, clientName: "example-client")
-        log(connection, try await connection.send("PING"))
-        log(connection, try await connection.send("CLIENT", "INFO"))
-        log(connection, try await connection.send("CLIENT", "GETNAME"))
-        log(connection, try await connection.send("ACL", "WHOAMI"))
-        log(connection, try await connection.send("ACL", "USERS"))
-        log(connection, try await connection.send("ACL", "LIST"))
+        try await log(connection, connection.send("PING"))
+        try await log(connection, connection.send("CLIENT", "INFO"))
+        try await log(connection, connection.send("CLIENT", "GETNAME"))
+        try await log(connection, connection.send("ACL", "WHOAMI"))
+        try await log(connection, connection.send("ACL", "USERS"))
+        try await log(connection, connection.send("ACL", "LIST"))
         //        log(connection, try await connection.send("CONFIG", "GET", "*"))
         //        log(connection, try await connection.send("COMMAND"))
-        log(connection, try await connection.send("QUIT"))
+        try await log(connection, connection.send("QUIT"))
         try await connection.disconnect()
         await Timeit.shared.finish("PREAMBLE")
     }
 
     static func pubSubTest() async throws {
-
         let channel = "my-example-channel"
 
         let listenerTask = Task {
@@ -55,7 +54,7 @@ struct Main {
                     log(connection, "STOPPING")
                     break
                 }
-                values.insert(Int(try message.value.stringValue)!)
+                try values.insert(Int(message.value.stringValue)!)
             }
             await Timeit.shared.finish("Listening")
             return values
@@ -63,13 +62,13 @@ struct Main {
 
         let publisherTask = Task {
             // We're going to publish some things.
-            let values = 0..<10_000
+            let values = 0 ..< 10000
             Timeit.shared.start("Sending")
             let connection = RedisConnection(label: "sender", host: host)
             try await connection.connect()
             try await connection.hello(password: password)
             try await connection.send(values: values.map { ["PUBLISH", channel, "\($0)"] })
-            log(connection, try await connection.publish(channel: channel, value: "STOP"))
+            try await log(connection, connection.publish(channel: channel, value: "STOP"))
             await Timeit.shared.finish("Sending")
             return Set(values)
         }
@@ -79,5 +78,4 @@ struct Main {
 
         assert(publishedValues == receivedValues)
     }
-
 }

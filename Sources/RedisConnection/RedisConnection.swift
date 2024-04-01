@@ -3,9 +3,8 @@ import Network
 @preconcurrency import os
 
 public actor RedisConnection {
-
-    nonisolated
-    public let label: String?
+    public nonisolated
+    let label: String?
 
     let connection: NWConnection
     let stateStream: AsyncStream<NWConnection.State>
@@ -22,7 +21,7 @@ public actor RedisConnection {
     public init(label: String? = nil, host: String? = nil, port: Int? = nil) {
         self.label = label
         let host = NWEndpoint.Host(host ?? "localhost")
-        let port = NWEndpoint.Port(rawValue: NWEndpoint.Port.RawValue(port ?? 6_379))!
+        let port = NWEndpoint.Port(rawValue: NWEndpoint.Port.RawValue(port ?? 6379))!
         let params = NWParameters(tls: nil, tcp: .init())
         params.defaultProtocolStack.applicationProtocols.insert(NWProtocolFramer.Options(definition: RedisProtocol.definition), at: 0)
         let connection = NWConnection(host: host, port: port, using: params)
@@ -75,15 +74,15 @@ public actor RedisConnection {
     // MARK: -
 
     private func receiveHelper(resumeThrowing: @Sendable @escaping (Error) -> Void, resumeReturning: @Sendable @escaping (RESPValue) -> Void) {
-        let logger = self.logger
+        let logger = logger
         logger?.debug("\(#function)")
         connection.receive(minimumIncompleteLength: 0, maximumLength: Int.max) { _, context, _, error in
             logger?.debug("\(#function) (closure)")
-            if let error = error {
+            if let error {
                 resumeThrowing(error)
                 return
             }
-            guard let context = context else {
+            guard let context else {
                 fatalError("No context")
             }
             guard let message = context.protocolMetadata(definition: RedisProtocol.definition) as? NWProtocolFramer.Message else {
@@ -111,11 +110,11 @@ public actor RedisConnection {
                 } resumeReturning: { value in
                     continuation.resume(returning: value)
                 }
-                connection.send(content: encodedValue, completion: .contentProcessed({ error in
-                    if let error = error {
+                connection.send(content: encodedValue, completion: .contentProcessed { error in
+                    if let error {
                         continuation.resume(throwing: error)
                     }
-                }))
+                })
             }
         }
     }
@@ -125,12 +124,12 @@ public actor RedisConnection {
         logger?.debug("\(#function)")
         let encodedValue = try value.encode()
         return try await withCheckedThrowingContinuation { continuation in
-            connection.send(content: encodedValue, completion: .contentProcessed({ error in
-                if let error = error {
+            connection.send(content: encodedValue, completion: .contentProcessed { error in
+                if let error {
                     continuation.resume(throwing: error)
                 }
                 continuation.resume()
-            }))
+            })
         }
     }
 
@@ -150,7 +149,6 @@ public actor RedisConnection {
 // MARK: -
 
 public extension RedisConnection {
-
     func send(value: [String]) async throws -> (RESPValue) {
         logger?.debug("\(#function)")
         let value = RESPValue.array(value.map { .blobString($0) })
@@ -164,7 +162,7 @@ public extension RedisConnection {
     }
 
     func send(_ value: String...) async throws -> (RESPValue) {
-        return try await send(value: value)
+        try await send(value: value)
     }
 
     func send(values: [[String]]) async throws {
@@ -173,12 +171,12 @@ public extension RedisConnection {
             try RESPValue.array($0.map { .blobString($0) }).encode()
         }
         return try await withCheckedThrowingContinuation { continuation in
-            connection.send(content: encodedValue, completion: .contentProcessed({ error in
-                if let error = error {
+            connection.send(content: encodedValue, completion: .contentProcessed { error in
+                if let error {
                     continuation.resume(throwing: error)
                 }
                 continuation.resume()
-            }))
+            })
         }
     }
 }
@@ -186,7 +184,6 @@ public extension RedisConnection {
 // MARK: -
 
 public extension RedisConnection {
-
     func subscribe(channels: String...) async throws -> AnyAsyncSequence<Pubsub> {
         mode = .subscriber
 
@@ -194,7 +191,7 @@ public extension RedisConnection {
         try await sendNoReceive(value: ["SUBSCRIBE"] + channels)
         var confirmedChannels: Set<String> = []
         for _ in 0 ..< channels.count {
-            confirmedChannels.insert(try await receive().pubsubValue.channel)
+            try await confirmedChannels.insert(receive().pubsubValue.channel)
         }
         if confirmedChannels != Set(channels) {
             throw RedisError.partialSubscribe
@@ -220,12 +217,12 @@ public extension RedisConnection {
 
 // MARK: -
 
-extension RedisConnection {
-    public func hello(username: String = "default", password: String, clientName: String? = nil) async throws {
+public extension RedisConnection {
+    func hello(username: String = "default", password: String, clientName: String? = nil) async throws {
         logger?.debug("\(#function)")
 
         var request = ["HELLO", "3", "AUTH", username, password]
-        if let clientName = clientName {
+        if let clientName {
             request += ["SETNAME", clientName]
         }
 
@@ -238,7 +235,7 @@ extension RedisConnection {
         }
     }
 
-    public func authenticate(password: String) async throws {
+    func authenticate(password: String) async throws {
         logger?.debug("\(#function)")
         let response = try await send("AUTH", password)
 

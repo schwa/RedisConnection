@@ -5,20 +5,20 @@ extension NWConnection.State: CustomStringConvertible {
     public var description: String {
         switch self {
         case .preparing:
-            return "preparing"
+            "preparing"
         case .ready:
-            return "ready"
+            "ready"
         case .cancelled:
-            return "cancelled"
+            "cancelled"
         case .setup:
-            return "setup"
+            "setup"
         default:
-            return "?"
+            "?"
         }
     }
 }
 
-public struct AnyAsyncIterator <Element>: AsyncIteratorProtocol {
+public struct AnyAsyncIterator<Element>: AsyncIteratorProtocol {
     let body: () async throws -> Element?
 
     public init(_ body: @escaping () async throws -> Element?) {
@@ -30,8 +30,7 @@ public struct AnyAsyncIterator <Element>: AsyncIteratorProtocol {
     }
 }
 
-public struct AnyAsyncSequence <Element>: AsyncSequence, Sendable {
-
+public struct AnyAsyncSequence<Element>: AsyncSequence, Sendable {
     public typealias Iterator = AnyAsyncIterator<Element>
 
     public let makeUnderlyingIterator: @Sendable () -> Iterator
@@ -46,11 +45,11 @@ public struct AnyAsyncSequence <Element>: AsyncSequence, Sendable {
     }
 
     public func makeAsyncIterator() -> Iterator {
-        return makeUnderlyingIterator()
+        makeUnderlyingIterator()
     }
 }
 
-extension Array where Element == UInt8 {
+extension [UInt8] {
     // I will fight you.
     static let crlf = [UInt8(ascii: "\r"), UInt8(ascii: "\n")]
 }

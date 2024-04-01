@@ -7,10 +7,10 @@ let package = Package(
     platforms: [
         .iOS("17.0"),
         .macOS("14.0"),
-        .macCatalyst("17.0")
+        .macCatalyst("17.0"),
     ],
     products: [
-        .library(name: "RedisConnection", targets: ["RedisConnection"])
+        .library(name: "RedisConnection", targets: ["RedisConnection"]),
     ],
     targets: [
         .executableTarget(
@@ -26,6 +26,6 @@ let package = Package(
             name: "RedisConnectionTests",
             dependencies: ["RedisConnection"],
             resources: [.copy("foo.dat")]
-        )
+        ),
     ]
 )

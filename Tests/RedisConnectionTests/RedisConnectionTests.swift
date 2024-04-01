@@ -1,9 +1,8 @@
-import XCTest
 import class Foundation.Bundle
 import RedisConnection
+import XCTest
 
 final class RedisConnectionTests: XCTestCase {
-
 //        let url = Bundle.module.url(forResource: "foo", withExtension: "dat")!
 //        let data = try Data(contentsOf: url)
 //        var scanner = CollectionScanner(elements: data)
@@ -38,7 +37,6 @@ final class RedisConnectionTests: XCTestCase {
     func testAttribute() throws {
         XCTAssertEqual(try RESPValueParser.parse(bytes: "|1\r\n+Hello\r\n+world\r\n".utf8)?.description, ".attribute([Hello: world])")
     }
-
 }
 
 // TODO: Null bulk string

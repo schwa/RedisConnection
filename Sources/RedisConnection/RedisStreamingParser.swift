@@ -10,7 +10,7 @@ public protocol RESPParser {
 }
 
 public extension RESPParser {
-    mutating func parse <C>(bytes: C) throws -> RESPValue? where C: Collection, C.Element == UInt8 {
+    mutating func parse(bytes: some Collection<UInt8>) throws -> RESPValue? {
         for byte in bytes {
             if let value = try parse(byte: byte) {
                 return value
@@ -23,7 +23,6 @@ public extension RESPParser {
 // MARK: -
 
 public struct RESPSimpleValueParserHelper: RESPParser {
-
     enum State {
         case waiting
         case headerConsumed
@@ -43,7 +42,7 @@ public struct RESPSimpleValueParserHelper: RESPParser {
         bytes.append(byte)
         switch (state, byte, Array(bytes.suffix(2))) {
         case (.waiting, header, _):
-            self.state = .headerConsumed
+            state = .headerConsumed
             bytes = []
             return nil
         case (.headerConsumed, _, .crlf):
@@ -152,7 +151,7 @@ public struct RESPCollectionParserHelper: RESPParser {
             count = valueCount(i)
             bytes = []
             if count == 0 {
-                return try self.value(0, [])
+                return try value(0, [])
             }
             return nil
         case (.headerConsumed, _, _, _):
@@ -180,8 +179,7 @@ public struct RESPValueParser: RESPParser {
 //    private var bytes: [UInt8] = []
     public private(set) var bytesParsed: Int = 0
 
-    public init() {
-    }
+    public init() {}
 
     public mutating func parse(byte: UInt8) throws -> RESPValue? {
 //        bytes.append(byte)
@@ -189,29 +187,31 @@ public struct RESPValueParser: RESPParser {
             switch Character(UnicodeScalar(byte)) {
             case "+":
                 helper = RESPSimpleValueParserHelper(header: UInt8(ascii: "+")) {
-                    return .simpleString(String(bytes: $0, encoding: .utf8)!)
+                    .simpleString(String(bytes: $0, encoding: .utf8)!)
                 }
             case "-":
                 helper = RESPSimpleValueParserHelper(header: UInt8(ascii: "-")) {
-                    return .errorString(String(bytes: $0, encoding: .utf8)!)
+                    .errorString(String(bytes: $0, encoding: .utf8)!)
                 }
             case ":":
                 helper = RESPSimpleValueParserHelper(header: UInt8(ascii: ":")) {
-                    return .integer(Int(String(bytes: $0, encoding: .utf8)!)!)
+                    .integer(Int(String(bytes: $0, encoding: .utf8)!)!)
                 }
             case "$":
                 helper = RESPFramedValueParserHelper(header: UInt8(ascii: "$")) { length, bytes in
                     if length == -1 {
-                        return .nullBulkString
-                    } else {
-                        return .blobString(bytes)
+                        .nullBulkString
+                    }
+                    else {
+                        .blobString(bytes)
                     }
                 }
             case "*":
                 helper = RESPCollectionParserHelper(header: UInt8(ascii: "*")) { count, values in
                     if count == -1 {
                         return .nullArray
-                    } else {
+                    }
+                    else {
                         guard count == values.count else {
                             throw RedisError.parseError
                         }
@@ -238,15 +238,15 @@ public struct RESPValueParser: RESPParser {
                 }
             case "!":
                 helper = RESPFramedValueParserHelper(header: UInt8(ascii: "!")) { _, bytes in
-                    return .blobError(bytes)
+                    .blobError(bytes)
                 }
             case "=":
                 helper = RESPFramedValueParserHelper(header: UInt8(ascii: "=")) { _, bytes in
-                    return .verbatimString(bytes)
+                    .verbatimString(bytes)
                 }
             case "(":
                 helper = RESPSimpleValueParserHelper(header: UInt8(ascii: "(")) {
-                    return .bigNumber($0)
+                    .bigNumber($0)
                 }
             case "%":
                 helper = RESPCollectionParserHelper(header: UInt8(ascii: "%")) {
@@ -266,8 +266,8 @@ public struct RESPValueParser: RESPParser {
                 }
             case "~":
                 helper = RESPCollectionParserHelper(header: UInt8(ascii: "~")) { _, values in
-                return .set(Set(values))
-            }
+                    .set(Set(values))
+                }
             case "|":
                 helper = RESPCollectionParserHelper(header: UInt8(ascii: "|")) {
                     $0 * 2
@@ -283,17 +283,18 @@ public struct RESPValueParser: RESPParser {
                 }
             case ",":
                 helper = RESPSimpleValueParserHelper(header: UInt8(ascii: ",")) {
-                    return .double(Double(String(bytes: $0, encoding: .utf8)!)!)
+                    .double(Double(String(bytes: $0, encoding: .utf8)!)!)
                 }
             case ">":
                 helper = RESPCollectionParserHelper(header: UInt8(ascii: ">")) { _, values in
-                    guard let kind = Pubsub.Kind(rawValue: try values[0].stringValue.lowercased()) else {
+                    guard let kind = try Pubsub.Kind(rawValue: values[0].stringValue.lowercased()) else {
                         throw RedisError.parseError
                     }
-                    let pubsub = Pubsub(
+                    let pubsub = try Pubsub(
                         kind: kind,
-                        channel: try values[1].stringValue,
-                        value: values[2])
+                        channel: values[1].stringValue,
+                        value: values[2]
+                    )
                     return .pubsub(pubsub)
                 }
             default:
@@ -313,7 +314,7 @@ public struct RESPValueParser: RESPParser {
 }
 
 public extension RESPValueParser {
-    static func parse <C>(bytes: C) throws -> RESPValue? where C: Collection, C.Element == UInt8 {
+    static func parse(bytes: some Collection<UInt8>) throws -> RESPValue? {
         var parser = RESPValueParser()
         return try parser.parse(bytes: bytes)
     }

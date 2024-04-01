@@ -3,7 +3,6 @@ import os
 import RedisConnection
 
 actor Timeit {
-
     @TaskLocal
     static var shared = Timeit()
 
@@ -31,7 +30,6 @@ actor Timeit {
     private func update(label: String, start: CFAbsoluteTime) {
         starts[label] = start
     }
-
 }
 
 func log(_ connection: RedisConnection, _ values: Any...) {
@@ -41,6 +39,6 @@ func log(_ connection: RedisConnection, _ values: Any...) {
 
 extension Task where Success == () {
     func wait() async throws {
-        try await self.value
+        try await value
     }
 }

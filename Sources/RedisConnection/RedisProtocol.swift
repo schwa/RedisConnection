@@ -16,11 +16,10 @@ public class RedisProtocol: NWProtocolFramerImplementation {
     let logger = Logger()
     var parser = RESPValueParser()
 
-    public required init(framer: NWProtocolFramer.Instance) {
-    }
+    public required init(framer _: NWProtocolFramer.Instance) {}
 
-    public func start(framer: NWProtocolFramer.Instance) -> NWProtocolFramer.StartResult {
-        return .ready
+    public func start(framer _: NWProtocolFramer.Instance) -> NWProtocolFramer.StartResult {
+        .ready
     }
 
     public func handleInput(framer: NWProtocolFramer.Instance) -> Int {
@@ -38,7 +37,7 @@ public class RedisProtocol: NWProtocolFramerImplementation {
                     let startBytesParsed = parser.bytesParsed
                     debugLogger?.debug("startBytesParsed: \(startBytesParsed)")
                     debugLogger?.debug("\(String(describing: buffer)) \(isComplete)")
-                    guard let buffer = buffer, buffer.count > 0 else {
+                    guard let buffer, !buffer.isEmpty else {
                         debugLogger?.debug("Zero bytes. Skipping")
                         return 0
                     }
@@ -46,7 +45,8 @@ public class RedisProtocol: NWProtocolFramerImplementation {
                     debugLogger?.debug("parsed: \(self.parser.bytesParsed - startBytesParsed) / \(buffer.count)")
                     // We may not have parsed the entire buffer so compute what we did pass
                     return parser.bytesParsed - startBytesParsed
-                } catch {
+                }
+                catch {
                     logger.error("\(String(describing: error))")
                     error = localError
                     return 0
@@ -56,7 +56,7 @@ public class RedisProtocol: NWProtocolFramerImplementation {
                 debugLogger?.debug("NOT PARSED")
                 return 0
             }
-            guard let value = value else {
+            guard let value else {
                 debugLogger?.debug("CONTINUE")
                 continue
             }
@@ -71,21 +71,20 @@ public class RedisProtocol: NWProtocolFramerImplementation {
         return 0
     }
 
-    public func handleOutput(framer: NWProtocolFramer.Instance, message: NWProtocolFramer.Message, messageLength: Int, isComplete: Bool) {
+    public func handleOutput(framer: NWProtocolFramer.Instance, message _: NWProtocolFramer.Message, messageLength: Int, isComplete _: Bool) {
         do {
             try framer.writeOutputNoCopy(length: messageLength)
-        } catch {
+        }
+        catch {
             logger.error("\(String(describing: error))")
         }
     }
 
-    public func wakeup(framer: NWProtocolFramer.Instance) {
+    public func wakeup(framer _: NWProtocolFramer.Instance) {}
+
+    public func stop(framer _: NWProtocolFramer.Instance) -> Bool {
+        true
     }
 
-    public func stop(framer: NWProtocolFramer.Instance) -> Bool {
-        return true
-    }
-
-    public func cleanup(framer: NWProtocolFramer.Instance) {
-    }
+    public func cleanup(framer _: NWProtocolFramer.Instance) {}
 }

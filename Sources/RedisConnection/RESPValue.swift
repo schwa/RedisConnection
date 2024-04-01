@@ -1,22 +1,22 @@
 public indirect enum RESPValue: Sendable, Hashable {
     // <implemented>/<unit tests decode>/<unit test encode
-    case simpleString(String)              // ✅🔲🔲 RESP 2+: `+<string>\r\n`
-    case errorString(String)               // ✅🔲🔲 RESP 2+: `-<string>\r\n`
-    case integer(Int)                      // ✅🔲🔲 RESP 2+: `:<number>\r\n`
-    case blobString([UInt8])               // ✅🔲🔲 RESP 2+: `$<length>\r\n<bytes>\r\n`
-    case nullBulkString                    // ✅🔲🔲 RESP 2:  `$-1\r\n
-    case nullArray                         // ✅🔲🔲 RESP 2:  `*-1\r\n`
-    case null                              // ✅✅🔲 RESP 3:  `_\r\n`
-    case double(Double)                    // ✅🔲🔲 RESP 3:  `,<floating-point-number>\r\n`
-    case boolean(Bool)                     // ✅✅🔲 RESP 3:  `#t\r\n` / `#f\r\n`
-    case blobError([UInt8])                // ✅✅🔲 RESP 3:  `!<length>\r\n<bytes>\r\n`
-    case verbatimString([UInt8])           // ✅✅🔲 RESP 3:  `=<length>\r\n<bytes>`
-    case bigNumber([UInt8])                // ✅🔲🔲 RESP 3:  `(<big number>\r\n`
-    case array([Self])                // ✅🔲🔲 RESP 2+: `*<count>\r\n<elements>`
-    case map([Self: Self])       // ✅✅🔲 RESP 3+: `%<count>\r\n<elements>`
-    case set(Set<Self>)               // ✅✅🔲 RESP 3+: `~<count>\r\n<elements>`
+    case simpleString(String) // ✅🔲🔲 RESP 2+: `+<string>\r\n`
+    case errorString(String) // ✅🔲🔲 RESP 2+: `-<string>\r\n`
+    case integer(Int) // ✅🔲🔲 RESP 2+: `:<number>\r\n`
+    case blobString([UInt8]) // ✅🔲🔲 RESP 2+: `$<length>\r\n<bytes>\r\n`
+    case nullBulkString // ✅🔲🔲 RESP 2:  `$-1\r\n
+    case nullArray // ✅🔲🔲 RESP 2:  `*-1\r\n`
+    case null // ✅✅🔲 RESP 3:  `_\r\n`
+    case double(Double) // ✅🔲🔲 RESP 3:  `,<floating-point-number>\r\n`
+    case boolean(Bool) // ✅✅🔲 RESP 3:  `#t\r\n` / `#f\r\n`
+    case blobError([UInt8]) // ✅✅🔲 RESP 3:  `!<length>\r\n<bytes>\r\n`
+    case verbatimString([UInt8]) // ✅✅🔲 RESP 3:  `=<length>\r\n<bytes>`
+    case bigNumber([UInt8]) // ✅🔲🔲 RESP 3:  `(<big number>\r\n`
+    case array([Self]) // ✅🔲🔲 RESP 2+: `*<count>\r\n<elements>`
+    case map([Self: Self]) // ✅✅🔲 RESP 3+: `%<count>\r\n<elements>`
+    case set(Set<Self>) // ✅✅🔲 RESP 3+: `~<count>\r\n<elements>`
     case attribute([Self: Self]) // ✅🔲🔲 RESP 3+: `|<count>\r\n<elements>`
-    case pubsub(Pubsub)                    // ✅🔲🔲 RESP 3+: `><count>\r\n<elements>` // TODO - this may not be exactly how this works
+    case pubsub(Pubsub) // ✅🔲🔲 RESP 3+: `><count>\r\n<elements>` // TODO - this may not be exactly how this works
 }
 
 public struct Pubsub: Sendable, Hashable {
@@ -25,6 +25,7 @@ public struct Pubsub: Sendable, Hashable {
         case subscribe
         case unsubscribe
     }
+
     public var kind: Kind
     public var channel: String
     public var value: RESPValue
@@ -32,7 +33,7 @@ public struct Pubsub: Sendable, Hashable {
 
 public extension RESPValue {
     static func blobString(_ string: String) -> RESPValue {
-        return blobString(Array(string.utf8))
+        blobString(Array(string.utf8))
     }
 
     var integerValue: Int {
@@ -81,7 +82,6 @@ public extension RESPValue {
                 throw RedisError.typeMismatch
             }
         }
-
     }
 }
 
@@ -131,39 +131,39 @@ extension RESPValue: CustomStringConvertible {
     public var description: String {
         switch self {
         case .simpleString(let value):
-            return value
+            value
         case .errorString(let value):
-            return value
+            value
         case .integer(let value):
-            return "\(value)"
+            "\(value)"
         case .blobString(let value):
-            return String(bytes: value, encoding: .utf8)!
+            String(bytes: value, encoding: .utf8)!
         case .nullBulkString:
-            return "<nil-string>"
+            "<nil-string>"
         case .array(let values):
-            return "[" + values.map { $0.description }.joined(separator: ", ") + "]"
+            "[" + values.map(\.description).joined(separator: ", ") + "]"
         case .nullArray:
-            return "<nil-array>"
+            "<nil-array>"
         case .null:
-            return "<null>"
+            "<null>"
         case .double(let value):
-            return "\(value)"
+            "\(value)"
         case .boolean(let value):
-            return "\(value)"
+            "\(value)"
         case .blobError(let value):
-            return String(bytes: value, encoding: .utf8)!
+            String(bytes: value, encoding: .utf8)!
         case .verbatimString(let value):
-            return String(bytes: value, encoding: .utf8)!
+            String(bytes: value, encoding: .utf8)!
         case .bigNumber(let value):
-            return ".bigNumber(\(value))"
+            ".bigNumber(\(value))"
         case .map(let values):
-            return ".map([" + values.map { "\($0.key.description): \($0.value.description)" }.joined(separator: ", ") + "])"
+            ".map([" + values.map { "\($0.key.description): \($0.value.description)" }.joined(separator: ", ") + "])"
         case .set(let values):
-            return ".set([" + values.map { $0.description }.joined(separator: ", ") + "])"
+            ".set([" + values.map(\.description).joined(separator: ", ") + "])"
         case .attribute(let values):
-            return ".attribute([" + values.map { "\($0.key.description): \($0.value.description)" }.joined(separator: ", ") + "])"
+            ".attribute([" + values.map { "\($0.key.description): \($0.value.description)" }.joined(separator: ", ") + "])"
         case .pubsub(let value):
-            return "pubsub(\(String(describing: value))"
+            "pubsub(\(String(describing: value))"
         }
     }
 }
