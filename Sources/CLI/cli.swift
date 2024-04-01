@@ -1,6 +1,6 @@
 import Foundation
-import RedisConnection
 import os
+import RedisConnection
 
 @main
 struct Main {
@@ -12,7 +12,6 @@ struct Main {
         //        try! await basic2Test()
                 try! await pubSubTest()
     }
-
 
     static func basic1Test() async throws {
         let connection = RedisConnection(label: "preamble", host: host)
@@ -36,7 +35,7 @@ struct Main {
         log(connection, try await connection.send("ACL", "LIST"))
         //        log(connection, try await connection.send("CONFIG", "GET", "*"))
         //        log(connection, try await connection.send("COMMAND"))
-        log(connection,  try await connection.send("QUIT"))
+        log(connection, try await connection.send("QUIT"))
         try await connection.disconnect()
         await Timeit.shared.finish("PREAMBLE")
     }

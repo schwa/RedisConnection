@@ -12,10 +12,10 @@ public indirect enum RESPValue: Sendable, Hashable {
     case blobError([UInt8])                // ✅✅🔲 RESP 3:  `!<length>\r\n<bytes>\r\n`
     case verbatimString([UInt8])           // ✅✅🔲 RESP 3:  `=<length>\r\n<bytes>`
     case bigNumber([UInt8])                // ✅🔲🔲 RESP 3:  `(<big number>\r\n`
-    case array([RESPValue])                // ✅🔲🔲 RESP 2+: `*<count>\r\n<elements>`
-    case map([RESPValue: RESPValue])       // ✅✅🔲 RESP 3+: `%<count>\r\n<elements>`
-    case set(Set<RESPValue>)               // ✅✅🔲 RESP 3+: `~<count>\r\n<elements>`
-    case attribute([RESPValue: RESPValue]) // ✅🔲🔲 RESP 3+: `|<count>\r\n<elements>`
+    case array([Self])                // ✅🔲🔲 RESP 2+: `*<count>\r\n<elements>`
+    case map([Self: Self])       // ✅✅🔲 RESP 3+: `%<count>\r\n<elements>`
+    case set(Set<Self>)               // ✅✅🔲 RESP 3+: `~<count>\r\n<elements>`
+    case attribute([Self: Self]) // ✅🔲🔲 RESP 3+: `|<count>\r\n<elements>`
     case pubsub(Pubsub)                    // ✅🔲🔲 RESP 3+: `><count>\r\n<elements>` // TODO - this may not be exactly how this works
 }
 
@@ -113,15 +113,15 @@ public extension RESPValue {
             return Array("=\(value.count)\r\n".utf8) + value + Array("\r\n".utf8)
         case .bigNumber(let value):
             return Array("+\(value)\r\n".utf8)
-        case .double(_):
+        case .double:
             fatalError("Inimplemented")
-        case .map(_):
+        case .map:
             fatalError("Inimplemented")
-        case .set(_):
+        case .set:
             fatalError("Inimplemented")
-        case .attribute(_):
+        case .attribute:
             fatalError("Inimplemented")
-        case .pubsub(_):
+        case .pubsub:
             fatalError("Inimplemented")
         }
     }

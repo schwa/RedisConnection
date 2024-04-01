@@ -1,6 +1,6 @@
-import RedisConnection
 import Foundation
 import os
+import RedisConnection
 
 actor Timeit {
 
@@ -23,7 +23,6 @@ actor Timeit {
             return
         }
         starts[label] = nil
-
 
         let s = FloatingPointFormatStyle().format(current - start)
         print("⌛ \(label): \(s)")

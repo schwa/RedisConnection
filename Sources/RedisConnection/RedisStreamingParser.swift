@@ -252,7 +252,7 @@ public struct RESPValueParser: RESPParser {
                 helper = RESPCollectionParserHelper(header: UInt8(ascii: "%")) {
                     $0 * 2
                 }
-                value: { count, values in
+                value: { _, values in
                     let pairs = try stride(from: 0, to: values.count, by: 2).map {
                         Array(values[$0 ..< Swift.min($0 + 2, values.count)])
                     }
@@ -272,7 +272,7 @@ public struct RESPValueParser: RESPParser {
                 helper = RESPCollectionParserHelper(header: UInt8(ascii: "|")) {
                     $0 * 2
                 }
-                value: { count, values in
+                value: { _, values in
                     let pairs = stride(from: 0, to: values.count, by: 2).map {
                         Array(values[$0 ..< Swift.min($0 + 2, values.count)])
                     }
@@ -286,7 +286,7 @@ public struct RESPValueParser: RESPParser {
                     return .double(Double(String(bytes: $0, encoding: .utf8)!)!)
                 }
             case ">":
-                helper = RESPCollectionParserHelper(header: UInt8(ascii: ">")) { count, values in
+                helper = RESPCollectionParserHelper(header: UInt8(ascii: ">")) { _, values in
                     guard let kind = Pubsub.Kind(rawValue: try values[0].stringValue.lowercased()) else {
                         throw RedisError.parseError
                     }
