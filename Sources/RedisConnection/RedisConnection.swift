@@ -120,7 +120,7 @@ public actor RedisConnection {
     }
 
     public func sendNoReceive(value: RESPValue) async throws {
-        assert(mode == .normal)
+        assert(mode == .subscriber)
         logger?.debug("\(#function)")
         let encodedValue = try value.encode()
         return try await withCheckedThrowingContinuation { continuation in
@@ -134,7 +134,7 @@ public actor RedisConnection {
     }
 
     public func receive() async throws -> RESPValue {
-        assert(mode == .normal)
+        assert(mode == .subscriber)
         logger?.debug("\(#function)")
         return try await withCheckedThrowingContinuation { continuation in
             receiveHelper { error in
