@@ -6,7 +6,7 @@ let package = Package(
     name: "RedisConnection",
     platforms: [
         .iOS("17.0"),
-        .macOS("14.0"),
+        .macOS("12.0"),
         .macCatalyst("17.0"),
     ],
     products: [
